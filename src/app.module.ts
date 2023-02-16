@@ -2,12 +2,18 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { MongooseModule } from '@nestjs/mongoose';
+import { Product, ProductSchema } from 'schemas/product.schema';
+import { Order, OrderSchema } from 'schemas/order.scheme';
 
 @Module({
   imports: [
     MongooseModule.forRoot(
       `mongodb+srv://umutkiziloglu:n4gSGxQXyCKT1WY7@product.6dc3g9o.mongodb.net/product?retryWrites=true&w=majority`,
     ),
+    MongooseModule.forFeature([
+      { name: Product.name, schema: ProductSchema },
+      { name: Order.name, schema: OrderSchema },
+    ]),
   ],
   controllers: [AppController],
   providers: [AppService],
