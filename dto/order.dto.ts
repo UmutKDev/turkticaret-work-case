@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-
 import { IsNotEmpty, IsNumber } from 'class-validator';
+import { Transform } from 'class-transformer';
 
 export class CreateOrderDataRequest {
   @ApiProperty()
@@ -21,6 +21,7 @@ export class CreateOrderDataRequest {
 
 export class GetOrderDataRequest {
   @ApiProperty()
+  @Transform(({ value }) => Number(value))
   @IsNotEmpty()
   @IsNumber()
   order_id: number;
