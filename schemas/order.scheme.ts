@@ -11,6 +11,9 @@ export class Order {
   @Prop({ type: Types.ObjectId, ref: 'product' })
   product_id: number;
 
+  @Prop({ type: Types.ObjectId, ref: 'campaign' })
+  campaign_id: number;
+
   //   @Prop({ type: Types.ObjectId, ref: 'user_id' })
   //   user_id: number;
 
