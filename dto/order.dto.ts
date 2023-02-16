@@ -11,5 +11,10 @@ export class CreateOrderDataRequest {
   @ApiProperty()
   @IsNotEmpty()
   @IsNumber()
+  campaign_id: number;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsNumber()
   stock_quantity: number;
 }
