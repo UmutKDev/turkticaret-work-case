@@ -18,3 +18,10 @@ export class CreateOrderDataRequest {
   @IsNumber()
   stock_quantity: number;
 }
+
+export class GetOrderDataRequest {
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsNumber()
+  order_id: number;
+}
