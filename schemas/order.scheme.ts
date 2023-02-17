@@ -5,23 +5,29 @@ export type OrderDocument = HydratedDocument<Order>;
 
 @Schema()
 export class Order {
-  @Prop()
-  order_id: number;
+  // add object id
+  @Prop({
+    type: String,
+    default: () => new Types.ObjectId(),
+    required: true,
+    unique: true,
+  })
+  order_id: string;
 
   @Prop({ type: Types.ObjectId, ref: 'product' })
-  product_id: number;
+  product: number;
 
   @Prop({ type: Types.ObjectId, ref: 'campaign' })
-  campaign_id: number;
+  campaign: number;
 
-  //   @Prop({ type: Types.ObjectId, ref: 'user_id' })
-  //   user_id: number;
-
-  @Prop()
-  created_at: Date;
-
-  @Prop()
-  updated_at: Date;
+  @Prop({
+    type: Object,
+    default: { created: new Date(), updated: new Date() },
+  })
+  date: {
+    created: Date;
+    updated: Date;
+  };
 }
 
 export const OrderSchema = SchemaFactory.createForClass(Order);
