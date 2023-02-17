@@ -1,7 +1,7 @@
 import { seeder } from 'nestjs-seeder';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Product, ProductSchema } from 'schemas/product.schema';
-import { Category, CategorySchema } from 'schemas/category.scheme';
+import { Category, CategorySchema } from 'schemas/category.schema';
 import { ProductsSeeder } from 'src/seeders/products.seeder';
 
 seeder({
