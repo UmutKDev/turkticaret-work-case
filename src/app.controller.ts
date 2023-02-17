@@ -1,16 +1,21 @@
-import { Controller, Get, Post, Body } from '@nestjs/common';
+import { Controller, Get, Post, Body, Query } from '@nestjs/common';
 import { AppService } from './app.service';
-import { CreateOrderDataRequest } from 'dto/order.dto';
+import { CreateOrderDataRequest, GetOrderDataRequest } from 'dto/order.dto';
+import { Order } from 'schemas/order.scheme';
 
 @Controller()
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
   @Post('createOrder')
-  createOrder(
-    @Body() { product_id, stock_quantity }: CreateOrderDataRequest,
-  ): string {
-    return this.appService.createOrder({ product_id, stock_quantity });
+  async createOrder(
+    @Body() { product_id, campaign_id, stock_quantity }: CreateOrderDataRequest,
+  ): Promise<Order> {
+    return this.appService.createOrder({
+      product_id,
+      campaign_id,
+      stock_quantity,
+    });
   }
 
   @Get('getCampaigns')
@@ -19,7 +24,9 @@ export class AppController {
   }
 
   @Get('getOrderOne')
-  getOrderOne(): string {
-    return this.appService.getOrderOne();
+  async getOrderOne(
+    @Query() { order_id }: GetOrderDataRequest,
+  ): Promise<Order> {
+    return this.appService.getOrderOne({ order_id });
   }
 }
