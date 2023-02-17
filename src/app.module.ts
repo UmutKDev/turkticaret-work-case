@@ -4,6 +4,7 @@ import { AppService } from './app.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Product, ProductSchema } from 'schemas/product.schema';
 import { Order, OrderSchema } from 'schemas/order.scheme';
+import { Campaign, CampaignSchema } from 'schemas/campaign.scheme';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { Order, OrderSchema } from 'schemas/order.scheme';
     MongooseModule.forFeature([
       { name: Product.name, schema: ProductSchema },
       { name: Order.name, schema: OrderSchema },
+      { name: Campaign.name, schema: CampaignSchema },
     ]),
   ],
   controllers: [AppController],
