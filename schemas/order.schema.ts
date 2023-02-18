@@ -14,18 +14,18 @@ export class Order {
   })
   order_id: string;
 
-  @Prop()
+  @Prop({ required: true })
   products: number[];
 
-  @Prop({ type: Types.ObjectId, ref: 'campaign' })
-  campaign: number;
+  @Prop({ required: true })
+  campaign_id: number;
 
   @Prop({ type: Object })
   amount: {
     total: number;
-    discount: number;
+    totalDiscount: number;
     discountRate: number;
-    cargo: number;
+    shippment: number;
   };
 
   @Prop({
