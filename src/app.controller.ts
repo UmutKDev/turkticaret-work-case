@@ -10,10 +10,11 @@ export class AppController {
 
   @Post('createOrder')
   async createOrder(
-    @Body() { product_id, campaign_id, stock_quantity }: CreateOrderDataRequest,
+    @Body()
+    { products, campaign_id }: CreateOrderDataRequest,
   ): Promise<Order> {
     return this.appService.createOrder({
-      product_id,
+      products,
       campaign_id,
     });
   }
