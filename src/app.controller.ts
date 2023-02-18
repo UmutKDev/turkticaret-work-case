@@ -39,7 +39,7 @@ export class AppController {
   @Get('getOrderOne')
   async getOrderOne(
     @Query() { order_id }: GetOrderDataRequest,
-  ): Promise<Order> {
+  ): Promise<Order | Campaign> {
     return this.appService.getOrderOne({ order_id });
   }
 }
