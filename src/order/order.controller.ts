@@ -16,11 +16,10 @@ export class OrderController {
   @Post('create')
   async createOrder(
     @Body()
-    { products, campaign_id }: CreateOrderDataRequest,
+    { products }: CreateOrderDataRequest,
   ): Promise<Order> {
     return this.orderService.createOrder({
       products,
-      campaign_id,
     });
   }
 

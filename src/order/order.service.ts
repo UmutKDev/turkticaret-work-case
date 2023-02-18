@@ -15,7 +15,7 @@ export class OrderService {
     @InjectModel(Category.name) private categoryModel,
   ) {}
 
-  async createOrder({ products, campaign_id }): Promise<Order> {
+  async createOrder({ products }): Promise<Order> {
     // first check stock if there is enough stock for the order
 
     const productIds = products.map((product) => product.id);
@@ -51,85 +51,124 @@ export class OrderService {
 
     const isShippmentDiscountAvailable = totalPrice > 150;
 
-    // check campaign category_title, author_name and max_product_count in product_ids array if is valid for campaign discount
-    const campaign = await this.campaignModel.findOne({ campaign_id }).lean();
+    // find best campaign for the order
+    const campaigns = await this.campaignModel
+      .find({
+        category_id: { $in: productIds },
+        author_name: { $in: productIds },
+      })
+      .select('campaign_id category_id author_name max_product_count')
+      .lean();
 
-    if (campaign) {
-      const { category_title, author_name, max_product_count } = campaign;
+    const campaign = campaigns.reduce((bestCampaign, currentCampaign) => {
+      const { category_id, author_name, max_product_count } = currentCampaign;
 
-      const category = await this.categoryModel.findOne({
-        category_title,
-      });
-
-      const categoryProducts = await this.productModel.find({
-        category_id: category.category_id,
-      });
-
-      const categoryProductIds = categoryProducts.map(
-        (categoryProduct) => categoryProduct.product_id,
+      const categoryProducts = productStocks.filter(
+        (productStock) => productStock.product_id === category_id,
       );
 
-      const isCategoryProductAvailable = productIds.every((productId) =>
-        categoryProductIds.includes(productId),
-      );
-
-      if (!isCategoryProductAvailable) {
-        throw new HttpException(
-          `Category Product IDs: ${productIds} is not available for campaign`,
-          400,
-        );
-      }
-
-      const authorProducts = await this.productModel.find({
-        author: author_name,
-      });
-
-      const authorProductIds = authorProducts.map(
-        (authorProduct) => authorProduct.product_id,
-      );
-
-      const isAuthorProductAvailable = productIds.every((productId) =>
-        authorProductIds.includes(productId),
-      );
-
-      if (!isAuthorProductAvailable) {
-        throw new HttpException(
-          `Author Product IDs: ${productIds} is not available for campaign`,
-          400,
-        );
-      }
-
-      const totalProductCount = products.reduce(
-        (total, product) => total + product.quantity,
+      const categoryProductCount = categoryProducts.reduce(
+        (total, categoryProduct) => total + categoryProduct.quantity,
         0,
       );
 
-      const isMaxProductCountAvailable = totalProductCount <= max_product_count;
+      const authorProducts = productStocks.filter(
+        (productStock) => productStock.product_id === author_name,
+      );
 
-      if (!isMaxProductCountAvailable) {
-        throw new HttpException(
-          `Product Count Product IDs: ${productIds} is not available for campaign`,
-          400,
-        );
+      const authorProductCount = authorProducts.reduce(
+        (total, authorProduct) => total + authorProduct.quantity,
+        0,
+      );
+
+      const isCategoryProductAvailable =
+        categoryProductCount <= max_product_count;
+
+      const isAuthorProductAvailable = authorProductCount <= max_product_count;
+
+      if (isCategoryProductAvailable && isAuthorProductAvailable) {
+        return currentCampaign;
       }
-    }
 
-    const totalCost = campaign
-      ? totalPrice * campaign.discount_rate
-      : totalPrice;
+      return bestCampaign;
+    }, null);
 
-    const order = await this.orderModel.create({
-      products: productStocks.map((productStock) => productStock.product_id),
-      campaign_id: campaign ? campaign.campaign_id : null,
-      amount: {
-        total: totalPrice,
-        totalWithDiscount: totalCost,
-        discount: campaign ? campaign.discount_rate : 0,
-        shippment: isShippmentDiscountAvailable ? 0 : 35,
-      },
-    });
+    // if (campaign) {
+    //   const { category_title, author_name, max_product_count } = campaign;
 
-    return order;
+    //   const category = await this.categoryModel.findOne({
+    //     category_title,
+    //   });
+
+    //   const categoryProducts = await this.productModel.find({
+    //     category_id: category.category_id,
+    //   });
+
+    //   const categoryProductIds = categoryProducts.map(
+    //     (categoryProduct) => categoryProduct.product_id,
+    //   );
+
+    //   const isCategoryProductAvailable = productIds.every((productId) =>
+    //     categoryProductIds.includes(productId),
+    //   );
+
+    //   if (!isCategoryProductAvailable) {
+    //     throw new HttpException(
+    //       `Category Product IDs: ${productIds} is not available for campaign`,
+    //       400,
+    //     );
+    //   }
+
+    //   const authorProducts = await this.productModel.find({
+    //     author: author_name,
+    //   });
+
+    //   const authorProductIds = authorProducts.map(
+    //     (authorProduct) => authorProduct.product_id,
+    //   );
+
+    //   const isAuthorProductAvailable = productIds.every((productId) =>
+    //     authorProductIds.includes(productId),
+    //   );
+
+    //   if (!isAuthorProductAvailable) {
+    //     throw new HttpException(
+    //       `Author Product IDs: ${productIds} is not available for campaign`,
+    //       400,
+    //     );
+    //   }
+
+    //   const totalProductCount = products.reduce(
+    //     (total, product) => total + product.quantity,
+    //     0,
+    //   );
+
+    //   const isMaxProductCountAvailable = totalProductCount <= max_product_count;
+
+    //   if (!isMaxProductCountAvailable) {
+    //     throw new HttpException(
+    //       `Product Count Product IDs: ${productIds} is not available for campaign`,
+    //       400,
+    //     );
+    //   }
+    // }
+
+    // const totalCost = campaign
+    //   ? totalPrice * campaign.discount_rate
+    //   : totalPrice;
+
+    // const order = await this.orderModel.create({
+    //   products: productStocks.map((productStock) => productStock.product_id),
+    //   campaign_id: campaign ? campaign.campaign_id : null,
+    //   amount: {
+    //     total: totalPrice,
+    //     totalWithDiscount: totalCost,
+    //     discount: campaign ? campaign.discount_rate : 0,
+    //     shippment: isShippmentDiscountAvailable ? 0 : 35,
+    //   },
+    // });
+
+    return null;
   }
 
   async getOrderOne({ order_id }): Promise<FindOrderResponse> {

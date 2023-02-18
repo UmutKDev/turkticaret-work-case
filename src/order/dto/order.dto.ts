@@ -18,11 +18,6 @@ export class CreateOrderDataRequest {
   @IsNotEmpty()
   @IsArray()
   products: Array<{ id: number; quantity: number }>;
-
-  @ApiProperty()
-  @IsNotEmpty()
-  @IsNumber()
-  campaign_id: number;
 }
 
 export class GetOrderDataRequest {
