@@ -4,18 +4,15 @@ import { IsNotEmpty, IsNumber } from 'class-validator';
 export class CreateOrderDataRequest {
   @ApiProperty()
   @IsNotEmpty()
-  @IsNumber()
-  product_id: number;
+  products: {
+    id: number;
+    quantity: number;
+  }[];
 
   @ApiProperty()
   @IsNotEmpty()
   @IsNumber()
   campaign_id: number;
-
-  @ApiProperty()
-  @IsNotEmpty()
-  @IsNumber()
-  stock_quantity: number;
 }
 
 export class GetOrderDataRequest {
