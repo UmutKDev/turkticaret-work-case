@@ -132,7 +132,7 @@ export class AppService {
   }
 
   getCampaigns(): string {
-    return 'getCampaigns';
+    return 'This action returns all campaigns';
   }
 
   async createCampaign({
