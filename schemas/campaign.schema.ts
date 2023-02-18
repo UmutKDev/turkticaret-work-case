@@ -15,16 +15,19 @@ export class Campaign {
   campaign_type: string;
 
   @Prop()
-  max_product_count: number;
+  min_cost: number;
 
   @Prop()
+  max_product_count: number;
+
+  @Prop({ type: Types.Buffer })
   discount_rate: number;
 
   @Prop()
   author_name: string;
 
   @Prop()
-  category_title: string;
+  category_id: string;
 
   @Prop()
   campaign_start_date: Date;
