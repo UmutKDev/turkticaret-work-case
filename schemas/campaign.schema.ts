@@ -1,48 +1,49 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
+import { ApiProperty } from '@nestjs/swagger';
 
 export type CampaignDocument = HydratedDocument<Campaign>;
 
 @Schema()
 export class Campaign {
-  @Prop()
+  @ApiProperty()
+  @Prop({ required: true, unique: true })
   campaign_id: number;
 
-  @Prop()
+  @ApiProperty()
+  @Prop({ required: true })
   campaign_name: string;
 
-  @Prop({ enum: ['mincostdiscount', 'onebookdiscount'] })
+  @ApiProperty({
+    enum: ['mincostdiscount', 'onebookdiscount'],
+    required: false,
+  })
+  @Prop({ enum: ['mincostdiscount', 'onebookdiscount'], required: false })
   campaign_type: string;
 
-  @Prop()
+  @ApiProperty({ required: false })
+  @Prop({ required: false })
   min_cost: number;
 
-  @Prop()
+  @ApiProperty({ required: false })
+  @Prop({ required: false })
   max_product_count: number;
 
-  @Prop({ type: Types.Buffer })
+  @ApiProperty({ required: true })
+  @Prop({ type: Types.Buffer, required: true })
   discount_rate: number;
 
-  @Prop()
+  @Prop({ required: false })
   author_name: string;
 
-  @Prop()
+  @Prop({ required: false })
   category_id: string;
 
-  @Prop()
-  campaign_start_date: Date;
-
-  @Prop()
-  campaign_end_date: Date;
-
-  @Prop()
-  campaign_status: string;
-
-  @Prop()
-  created_at: Date;
-
-  @Prop()
-  updated_at: Date;
+  @Prop({ type: Object, default: { start: new Date() } })
+  date: {
+    start: Date;
+    end: Date;
+  };
 }
 
 export const CampaignSchema = SchemaFactory.createForClass(Campaign);
