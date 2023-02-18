@@ -1,7 +1,10 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { MongooseModule } from '@nestjs/mongoose';
+import { OrderService } from './order/order.service';
+import { OrderController } from './order/order.controller';
+import { CampaignService } from './campaign/campaign.service';
+import { CampaignController } from './campaign/campaign.controller';
 import { Product, ProductSchema } from 'schemas/product.schema';
 import { Order, OrderSchema } from 'schemas/order.schema';
 import { Campaign, CampaignSchema } from 'schemas/campaign.schema';
@@ -19,7 +22,7 @@ import { Category, CategorySchema } from 'schemas/category.schema';
       { name: Category.name, schema: CategorySchema },
     ]),
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [AppController, OrderController, CampaignController],
+  providers: [OrderService, CampaignService],
 })
 export class AppModule {}
