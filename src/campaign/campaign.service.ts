@@ -6,8 +6,8 @@ import { Campaign } from 'schemas/campaign.schema';
 export class CampaignService {
   constructor(@InjectModel(Campaign.name) private campaignModel) {}
 
-  getCampaigns(): string {
-    return 'This action returns all campaigns';
+  async getCampaigns(): Promise<Campaign[]> {
+    return this.campaignModel.find().select('-_id -__v').lean();
   }
 
   async createCampaign({

@@ -34,7 +34,7 @@ export class CampaignController {
   }
 
   @Get('all')
-  getCampaigns(): string {
+  async getCampaigns(): Promise<Campaign[]> {
     return this.campaignService.getCampaigns();
   }
 }
