@@ -17,7 +17,7 @@ export class Order {
   @Prop({ required: true })
   products: number[];
 
-  @Prop({ required: true })
+  @Prop({ required: false })
   campaign_id: number;
 
   @Prop({ type: Object })
