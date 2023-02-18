@@ -18,8 +18,8 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "seed": "node dist/src/seeder",
-    "seed:refresh": "node dist/src/seeder --refresh"
+    "seed": "yarn build && node dist/src/seeder",
+    "seed:refresh": "yarn build && node dist/src/seeder --refresh"
   },
   "dependencies": {
     "@nestjs/common": "^9.0.0",
