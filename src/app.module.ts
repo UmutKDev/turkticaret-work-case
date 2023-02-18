@@ -3,8 +3,9 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Product, ProductSchema } from 'schemas/product.schema';
-import { Order, OrderSchema } from 'schemas/order.scheme';
-import { Campaign, CampaignSchema } from 'schemas/campaign.scheme';
+import { Order, OrderSchema } from 'schemas/order.schema';
+import { Campaign, CampaignSchema } from 'schemas/campaign.schema';
+import { Category, CategorySchema } from 'schemas/category.schema';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { Campaign, CampaignSchema } from 'schemas/campaign.scheme';
       { name: Product.name, schema: ProductSchema },
       { name: Order.name, schema: OrderSchema },
       { name: Campaign.name, schema: CampaignSchema },
+      { name: Category.name, schema: CategorySchema },
     ]),
   ],
   controllers: [AppController],
