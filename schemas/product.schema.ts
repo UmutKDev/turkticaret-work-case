@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import mongoose, { Document } from 'mongoose';
+import { Document } from 'mongoose';
 
 export type ProductDocument = Document & Product;
 
@@ -18,7 +18,7 @@ export class Product {
   category_title: string;
 
   @Prop()
-  author: string;
+  author_name: string;
 
   @Prop()
   list_price: number;
