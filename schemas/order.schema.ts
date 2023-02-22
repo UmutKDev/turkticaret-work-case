@@ -1,14 +1,12 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument, Types } from 'mongoose';
+import { HydratedDocument } from 'mongoose';
 
 export type OrderDocument = HydratedDocument<Order>;
 
 @Schema()
 export class Order {
-  // add object id
   @Prop({
     type: String,
-    default: () => new Types.ObjectId(),
     required: true,
     unique: true,
   })
@@ -23,8 +21,8 @@ export class Order {
   @Prop({ type: Object })
   amount: {
     total: number;
-    totalDiscount: number;
-    discountRate: number;
+    totalWithDiscount: number;
+    discount: number;
     shippment: number;
   };
 
