@@ -14,20 +14,13 @@ export class Campaign {
   @Prop({ required: true })
   campaign_name: string;
 
-  @ApiProperty({
-    enum: ['mincostdiscount', 'onebookdiscount'],
-    required: false,
-  })
-  @Prop({ enum: ['mincostdiscount', 'onebookdiscount'], required: false })
-  campaign_type: string;
+  @ApiProperty({ required: false })
+  @Prop({ required: false })
+  min_order_amount: number;
 
   @ApiProperty({ required: false })
   @Prop({ required: false })
-  min_cost: number;
-
-  @ApiProperty({ required: false })
-  @Prop({ required: false })
-  max_product_count: number;
+  min_product_count: number;
 
   @ApiProperty({ required: true })
   @Prop({ type: Types.Buffer, required: true })
@@ -37,7 +30,7 @@ export class Campaign {
   author_name: string;
 
   @Prop({ required: false })
-  category_id: string;
+  category_id: number;
 
   @Prop({ type: Object, default: { start: new Date() } })
   date: {
