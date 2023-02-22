@@ -4,7 +4,7 @@ import { Order } from 'schemas/order.schema';
 import { Campaign } from 'schemas/campaign.schema';
 import { Product } from 'schemas/product.schema';
 import { Category } from 'schemas/category.schema';
-import type { FindOrderResponse } from 'src/order/interfaces/FindOrderResponse';
+import type { OrderResponse } from 'src/order/interfaces/Order.interface';
 
 @Injectable()
 export class OrderService {
@@ -15,14 +15,12 @@ export class OrderService {
     @InjectModel(Category.name) private categoryModel,
   ) {}
 
-  async createOrder({ products }): Promise<Order> {
-    // first check stock if there is enough stock for the order
-
+  async createOrder({ products }): Promise<OrderResponse> {
     const productIds = products.map((product) => product.id);
     const productQuantities = products.map((product) => product.quantity);
     const productStocks = await this.productModel
       .find({ product_id: { $in: productIds } })
-      .select('stock_quantity product_id -_id list_price')
+      .select('stock_quantity product_id -_id list_price author category_id')
       .lean();
 
     const isStockAvailable = productStocks.every(
@@ -37,141 +35,112 @@ export class OrderService {
       );
 
       throw new HttpException(
-        `Product IDs: ${notAvailableProduct.product_id} is not available`,
+        `Product IDs: ${notAvailableProduct.product_id} is not available in stock`,
         400,
       );
     }
 
-    // if total price is more than 150 TL, apply 35 TL shippment discount
-    const totalPrice = productStocks.reduce(
+    let totalPrice = productStocks.reduce(
       (total, productStock, index) =>
         total + productStock.list_price * productQuantities[index],
       0,
     );
 
+    let discountPrice = 0;
+
+    const campaigns = await this.campaignModel.find().lean();
+
+    const campaignauthorname = productStocks.filter((item) =>
+      campaigns.some(
+        (campaign) =>
+          campaign.author_name === item.author &&
+          item.category_id === campaign.category_id,
+      ),
+    );
+
+    const foundCampaignData = await this.campaignModel.findOne({
+      author_name: campaignauthorname[0].author,
+      category_id: campaignauthorname[0].category_id,
+    });
+
+    const discountRate = foundCampaignData.discount_rate;
+    const minOrderAmount = foundCampaignData.min_order_amount;
+    const minProductCount = foundCampaignData.min_product_count;
+
+    let campaignItemQuantity = 0;
+
+    products.filter((f) =>
+      productStocks
+        .filter(
+          (pS) =>
+            pS.product_id === f.id &&
+            pS.author === campaignauthorname[0].author,
+        )
+        .map(() => (campaignItemQuantity += f.quantity)),
+    );
+
+    if (campaignItemQuantity >= minProductCount) {
+      productStocks.map((item) => (totalPrice += item.list_price));
+      const topPrice = Math.max(...campaignauthorname.map((o) => o.list_price));
+      if (Number(totalPrice) > minOrderAmount) {
+        if (
+          totalPrice - topPrice <
+          totalPrice - (totalPrice / 100) * discountRate
+        ) {
+          discountPrice = totalPrice - topPrice;
+        } else {
+          discountPrice = totalPrice - totalPrice / (100 * discountRate);
+        }
+      } else {
+        discountPrice = totalPrice - topPrice;
+      }
+    } else {
+      productStocks.map((item) => (totalPrice += item.list_price));
+      if (Number(totalPrice) > minOrderAmount) {
+        discountPrice = totalPrice - totalPrice / (100 * discountRate);
+      } else {
+        discountPrice = 0;
+      }
+    }
+
     const isShippmentDiscountAvailable = totalPrice > 150;
 
-    // find best campaign for the order
-    const campaigns = await this.campaignModel
-      .find({
-        category_id: { $in: productIds },
-        author_name: { $in: productIds },
-      })
-      .select('campaign_id category_id author_name max_product_count')
-      .lean();
+    const order = await this.orderModel.create({
+      order_id: Math.floor(Math.random() * 1000000),
+      products: productStocks.map((productStock) => productStock.product_id),
+      campaign_id: foundCampaignData ? foundCampaignData.campaign_id : null,
+      amount: {
+        total: totalPrice,
+        totalWithDiscount: discountPrice,
+        discount: foundCampaignData ? foundCampaignData.discount_rate : 0,
+        shippment: isShippmentDiscountAvailable ? 0 : 35,
+      },
+    });
 
-    const campaign = campaigns.reduce((bestCampaign, currentCampaign) => {
-      const { category_id, author_name, max_product_count } = currentCampaign;
-
-      const categoryProducts = productStocks.filter(
-        (productStock) => productStock.product_id === category_id,
-      );
-
-      const categoryProductCount = categoryProducts.reduce(
-        (total, categoryProduct) => total + categoryProduct.quantity,
-        0,
-      );
-
-      const authorProducts = productStocks.filter(
-        (productStock) => productStock.product_id === author_name,
-      );
-
-      const authorProductCount = authorProducts.reduce(
-        (total, authorProduct) => total + authorProduct.quantity,
-        0,
-      );
-
-      const isCategoryProductAvailable =
-        categoryProductCount <= max_product_count;
-
-      const isAuthorProductAvailable = authorProductCount <= max_product_count;
-
-      if (isCategoryProductAvailable && isAuthorProductAvailable) {
-        return currentCampaign;
-      }
-
-      return bestCampaign;
-    }, null);
-
-    // if (campaign) {
-    //   const { category_title, author_name, max_product_count } = campaign;
-
-    //   const category = await this.categoryModel.findOne({
-    //     category_title,
-    //   });
-
-    //   const categoryProducts = await this.productModel.find({
-    //     category_id: category.category_id,
-    //   });
-
-    //   const categoryProductIds = categoryProducts.map(
-    //     (categoryProduct) => categoryProduct.product_id,
-    //   );
-
-    //   const isCategoryProductAvailable = productIds.every((productId) =>
-    //     categoryProductIds.includes(productId),
-    //   );
-
-    //   if (!isCategoryProductAvailable) {
-    //     throw new HttpException(
-    //       `Category Product IDs: ${productIds} is not available for campaign`,
-    //       400,
-    //     );
-    //   }
-
-    //   const authorProducts = await this.productModel.find({
-    //     author: author_name,
-    //   });
-
-    //   const authorProductIds = authorProducts.map(
-    //     (authorProduct) => authorProduct.product_id,
-    //   );
-
-    //   const isAuthorProductAvailable = productIds.every((productId) =>
-    //     authorProductIds.includes(productId),
-    //   );
-
-    //   if (!isAuthorProductAvailable) {
-    //     throw new HttpException(
-    //       `Author Product IDs: ${productIds} is not available for campaign`,
-    //       400,
-    //     );
-    //   }
-
-    //   const totalProductCount = products.reduce(
-    //     (total, product) => total + product.quantity,
-    //     0,
-    //   );
-
-    //   const isMaxProductCountAvailable = totalProductCount <= max_product_count;
-
-    //   if (!isMaxProductCountAvailable) {
-    //     throw new HttpException(
-    //       `Product Count Product IDs: ${productIds} is not available for campaign`,
-    //       400,
-    //     );
-    //   }
-    // }
-
-    // const totalCost = campaign
-    //   ? totalPrice * campaign.discount_rate
-    //   : totalPrice;
-
-    // const order = await this.orderModel.create({
-    //   products: productStocks.map((productStock) => productStock.product_id),
-    //   campaign_id: campaign ? campaign.campaign_id : null,
-    //   amount: {
-    //     total: totalPrice,
-    //     totalWithDiscount: totalCost,
-    //     discount: campaign ? campaign.discount_rate : 0,
-    //     shippment: isShippmentDiscountAvailable ? 0 : 35,
-    //   },
-    // });
-
-    return null;
+    return {
+      order_id: order.order_id,
+      products: productStocks.map((productStock) => ({
+        id: productStock.product_id,
+        title: productStock.title,
+        list_price: productStock.list_price,
+        stock_quantity: productStock.stock_quantity,
+      })),
+      campaign: {
+        id: foundCampaignData ? foundCampaignData.campaign_id : null,
+        name: foundCampaignData ? foundCampaignData.campaign_name : null,
+        discount_rate: foundCampaignData ? foundCampaignData.discount_rate : 0,
+      },
+      amount: {
+        total: order.amount.total,
+        totalWithDiscount: order.amount.totalWithDiscount,
+        discount: order.amount.discount,
+        shippment: order.amount.shippment,
+      },
+      date: order.date,
+    };
   }
 
-  async getOrderOne({ order_id }): Promise<FindOrderResponse> {
+  async getOrderOne({ order_id }): Promise<OrderResponse> {
     const order = await this.orderModel
       .findOne({ order_id })
       .select('-_id, -__v')
@@ -187,13 +156,6 @@ export class OrderService {
       .select('-_id, -__v')
       .lean();
 
-    const category = await this.categoryModel
-      .findOne({
-        category_id: campaign.category_id,
-      })
-      .select('-_id, -__v')
-      .lean();
-
     return {
       order_id: order.order_id,
       products: products.map((product) => ({
@@ -206,11 +168,14 @@ export class OrderService {
         id: campaign.campaign_id,
         name: campaign.campaign_name,
         discount_rate: campaign.discount_rate,
-        max_product_count: campaign.max_product_count,
-        author_name: campaign.author_name,
-        category_title: category.title,
       },
-      amount: order.amount,
+      amount: {
+        total: order.amount.total,
+        totalWithDiscount: order.amount.totalWithDiscount,
+        discount: order.amount.discount,
+        shippment: order.amount.shippment,
+      },
+      date: order.date,
     };
   }
 }
