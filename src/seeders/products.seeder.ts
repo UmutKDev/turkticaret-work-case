@@ -18,7 +18,7 @@ export class ProductsSeeder implements Seeder {
         product_id: item.product_id,
         title: item.title,
         category_id: item.category_id,
-        author: item.author,
+        author_name: item.author,
         list_price: item.list_price,
         stock_quantity: item.stock_quantity,
       };
