@@ -5,8 +5,7 @@ import {
   CreateOrderDataRequest,
   GetOrderDataRequest,
 } from 'src/order/dto/order.dto';
-import { Order } from 'schemas/order.schema';
-import type { FindOrderResponse } from 'src/order/interfaces/FindOrderResponse';
+import type { OrderResponse } from 'src/order/interfaces/Order.interface';
 
 @Controller('order')
 @ApiTags('Order API Endpoints')
@@ -17,7 +16,7 @@ export class OrderController {
   async createOrder(
     @Body()
     { products }: CreateOrderDataRequest,
-  ): Promise<Order> {
+  ): Promise<OrderResponse> {
     return this.orderService.createOrder({
       products,
     });
@@ -26,7 +25,7 @@ export class OrderController {
   @Get('find')
   async getOrderOne(
     @Query() { order_id }: GetOrderDataRequest,
-  ): Promise<FindOrderResponse> {
+  ): Promise<OrderResponse> {
     return this.orderService.getOrderOne({ order_id });
   }
 }
