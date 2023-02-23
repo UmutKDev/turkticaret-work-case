@@ -5,7 +5,6 @@ export interface OrderResponse {
   amount: {
     total: number;
     totalWithDiscount: number;
-    discount: number;
     shippment: number;
   };
   date: {
@@ -24,5 +23,4 @@ type Product = {
 type Campaign = {
   id: number;
   name: string;
-  discount_rate: number;
 };
