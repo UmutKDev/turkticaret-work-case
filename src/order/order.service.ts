@@ -19,10 +19,10 @@ export class OrderService {
   async createOrder({ products }): Promise<OrderResponse> {
     const campaigns = await this.campaignModel.find().lean();
 
-    if(products.length === 0) {
+    if (products.length === 0) {
       throw new HttpException('Product list is empty', 400);
     }
-    
+
     const productIds = products.map((product) => ({
       id: product.id,
       quantity: product.quantity,
@@ -34,7 +34,7 @@ export class OrderService {
       )
       .lean();
 
-     productIds.map((id) => {
+    productIds.map((id) => {
       productItems
         .filter((f) => f.product_id === id.id)
         .map((w) => {
@@ -76,43 +76,52 @@ export class OrderService {
         )
         .map(() => (campaignItemQuantity += f.quantity)),
     );
-    const authorCamp = campaigns.filter((cF) => cF.author_name && cF.category_id);
-    const percentCamp = campaigns.filter((cF) => cF.author_name && cF.category_id);
+    const authorCamp = campaigns.filter(
+      (cF) => cF.author_name && cF.category_id,
+    );
+    const percentCamp = campaigns.filter(
+      (cF) => cF.author_name && cF.category_id,
+    );
 
-    let activeCamp = {} as any
+    let activeCamp = {} as any;
 
     if (campaignItemQuantity >= authorCamp[0].min_product_count) {
       productItems.map((item) => (totalPrice += item.list_price));
       const topPrice = Math.max(...campaignauthorname.map((o) => o.list_price));
       if (totalPrice > percentCamp[0].min_order_amount) {
-        if (totalPrice - topPrice < totalPrice - (totalPrice / 100) * percentCamp[0].discount_rate) {
+        if (
+          totalPrice - topPrice <
+          totalPrice - (totalPrice / 100) * percentCamp[0].discount_rate
+        ) {
           activeCamp = {
-            id:  authorCamp[0].campaign_id,
-            name:  authorCamp[0].campaign_name
-          }
+            id: authorCamp[0].campaign_id,
+            name: authorCamp[0].campaign_name,
+          };
           discountPrice = totalPrice - topPrice;
         } else {
           activeCamp = {
-            id:  authorCamp[0].campaign_id,
-            name:  authorCamp[0].campaign_name
-          }          
-          discountPrice = totalPrice - totalPrice / (100 * percentCamp[0].discount_rate);
+            id: authorCamp[0].campaign_id,
+            name: authorCamp[0].campaign_name,
+          };
+          discountPrice =
+            totalPrice - totalPrice / (100 * percentCamp[0].discount_rate);
         }
       } else {
         activeCamp = {
-          id:  authorCamp[0].campaign_id,
-          name:  authorCamp[0].campaign_name
-        }        
+          id: authorCamp[0].campaign_id,
+          name: authorCamp[0].campaign_name,
+        };
         discountPrice = totalPrice - topPrice;
       }
     } else {
       productItems.map((item) => (totalPrice += item.list_price));
       if (Number(totalPrice) > percentCamp[0].min_order_amount) {
         activeCamp = {
-          id:  authorCamp[0].campaign_id,
-          name:  authorCamp[0].campaign_name
-        }        
-        discountPrice = totalPrice - totalPrice / (100 * percentCamp[0].discount_rate);
+          id: authorCamp[0].campaign_id,
+          name: authorCamp[0].campaign_name,
+        };
+        discountPrice =
+          totalPrice - totalPrice / (100 * percentCamp[0].discount_rate);
       } else {
         discountPrice = 0;
       }
@@ -141,7 +150,7 @@ export class OrderService {
       })),
       campaign: {
         id: activeCamp ? activeCamp.id : null,
-        name: activeCamp ? activeCamp.name : null
+        name: activeCamp ? activeCamp.name : null,
       },
       amount: {
         total: order.amount.total,
@@ -177,8 +186,8 @@ export class OrderService {
         stock_quantity: product.stock_quantity,
       })),
       campaign: {
-        id: campaign.campaign_id,
-        name: campaign.campaign_name,
+        id: campaign ? campaign.campaign_id : null,
+        name: campaign ? campaign.campaign_name : null,
       },
       amount: {
         total: order.amount.total,
