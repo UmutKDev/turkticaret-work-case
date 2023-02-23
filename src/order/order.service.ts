@@ -87,6 +87,13 @@ export class OrderService {
     );
 
     let activeCamp = {} as any;
+    const highestDiscountRate = Math.max(
+      ...percentCamp.map((o) => o.discount_rate),
+    );
+
+    const highestDiscountCamp = percentCamp.filter(
+      (cF) => cF.discount_rate === highestDiscountRate,
+    );
 
     if (campaignItemQuantity >= authorCamp[0].min_product_count) {
       productItems.map((item) => (totalPrice += item.list_price));
@@ -94,7 +101,7 @@ export class OrderService {
       if (totalPrice > percentCamp[0].min_order_amount) {
         if (
           totalPrice - topPrice <
-          totalPrice - (totalPrice / 100) * percentCamp[0].discount_rate
+          totalPrice - (totalPrice / 100) * highestDiscountCamp[0].discount_rate
         ) {
           activeCamp = {
             id: authorCamp[0].campaign_id,
@@ -107,7 +114,8 @@ export class OrderService {
             name: authorCamp[0].campaign_name,
           };
           discountPrice =
-            totalPrice - totalPrice / (100 * percentCamp[0].discount_rate);
+            totalPrice -
+            totalPrice / (100 * highestDiscountCamp[0].discount_rate);
         }
       } else {
         activeCamp = {
@@ -118,13 +126,14 @@ export class OrderService {
       }
     } else {
       productItems.map((item) => (totalPrice += item.list_price));
-      if (Number(totalPrice) > percentCamp[0].min_order_amount) {
+      if (Number(totalPrice) > highestDiscountCamp[0].min_order_amount) {
         activeCamp = {
-          id: percentCamp[0].campaign_id,
-          name: percentCamp[0].campaign_name,
+          id: highestDiscountCamp[0].campaign_id,
+          name: highestDiscountCamp[0].campaign_name,
         };
         discountPrice =
-          totalPrice - totalPrice / (100 * percentCamp[0].discount_rate);
+          totalPrice -
+          totalPrice / (100 * highestDiscountCamp[0].discount_rate);
       } else {
         discountPrice = 0;
       }
