@@ -72,15 +72,18 @@ export class OrderService {
         .filter(
           (pS) =>
             pS.product_id === f.id &&
-            pS.author_name === campaignauthorname[0]?.author_name,
+            pS.author_name === campaignauthorname[0]?.author_name &&
+            pS.category_id === campaignauthorname[0]?.category_id,
         )
         .map(() => (campaignItemQuantity += f.quantity)),
     );
     const authorCamp = campaigns.filter(
-      (cF) => cF.author_name && cF.category_id,
+      (cF) =>
+        cF.author_name === campaignauthorname[0]?.author_name &&
+        cF.category_id === campaignauthorname[0]?.category_id,
     );
     const percentCamp = campaigns.filter(
-      (cF) => cF.author_name && cF.category_id,
+      (cF) => cF.author_name.length === 0 && cF.category_id === -1,
     );
 
     let activeCamp = {} as any;
@@ -117,8 +120,8 @@ export class OrderService {
       productItems.map((item) => (totalPrice += item.list_price));
       if (Number(totalPrice) > percentCamp[0].min_order_amount) {
         activeCamp = {
-          id: authorCamp[0].campaign_id,
-          name: authorCamp[0].campaign_name,
+          id: percentCamp[0].campaign_id,
+          name: percentCamp[0].campaign_name,
         };
         discountPrice =
           totalPrice - totalPrice / (100 * percentCamp[0].discount_rate);
