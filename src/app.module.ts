@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { OrderService } from './order/order.service';
@@ -9,12 +10,20 @@ import { Product, ProductSchema } from 'schemas/product.schema';
 import { Order, OrderSchema } from 'schemas/order.schema';
 import { Campaign, CampaignSchema } from 'schemas/campaign.schema';
 import { Category, CategorySchema } from 'schemas/category.schema';
+import configuration from '../config/configuration';
 
 @Module({
   imports: [
-    MongooseModule.forRoot(
-      `mongodb+srv://umutkiziloglu:n4gSGxQXyCKT1WY7@product.6dc3g9o.mongodb.net/database?retryWrites=true&w=majority`,
-    ),
+    ConfigModule.forRoot({
+      load: [configuration],
+    }),
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (config: ConfigService) => ({
+        uri: config.get('database.host'),
+      }),
+      inject: [ConfigService],
+    }),
     MongooseModule.forFeature([
       { name: Product.name, schema: ProductSchema },
       { name: Order.name, schema: OrderSchema },
