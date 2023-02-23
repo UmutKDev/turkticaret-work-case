@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { CampaignService } from './campaign.service';
 import { Campaign } from 'schemas/campaign.schema';
@@ -16,20 +16,20 @@ export class CampaignController {
       campaign_id,
       campaign_name,
       discount_rate,
-      max_product_count,
+      min_order_amount,
+      min_product_count,
       author_name,
       category_id,
-      min_cost,
     }: CreateCampaignDataRequest,
   ): Promise<Campaign> {
     return this.campaignService.createCampaign({
       campaign_id,
       campaign_name,
       discount_rate,
-      max_product_count,
+      min_order_amount,
+      min_product_count,
       author_name,
       category_id,
-      min_cost,
     });
   }
 

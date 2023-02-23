@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { IsNotEmpty, IsNumber } from 'class-validator';
+import { IsNotEmpty, IsString, IsNumber } from 'class-validator';
 
 export class CreateCampaignDataRequest {
   @ApiProperty()
@@ -10,23 +10,8 @@ export class CreateCampaignDataRequest {
 
   @ApiProperty()
   @IsNotEmpty()
-  @IsNumber()
+  @IsString()
   campaign_name: string;
-
-  @ApiProperty()
-  @IsNotEmpty()
-  @IsNumber()
-  campaign_type: string;
-
-  @ApiProperty()
-  @IsNotEmpty()
-  @IsNumber()
-  min_cost: number;
-
-  @ApiProperty()
-  @IsNotEmpty()
-  @IsNumber()
-  max_product_count: number;
 
   @ApiProperty()
   @IsNotEmpty()
@@ -36,10 +21,18 @@ export class CreateCampaignDataRequest {
   @ApiProperty()
   @IsNotEmpty()
   @IsNumber()
+  min_order_amount: number;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsNumber()
+  min_product_count: number;
+
+  @ApiProperty()
   author_name: string;
 
   @ApiProperty()
   @IsNotEmpty()
   @IsNumber()
-  category_id: string;
+  category_id: number;
 }
