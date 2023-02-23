@@ -1,35 +1,29 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument, Types } from 'mongoose';
-import { ApiProperty } from '@nestjs/swagger';
+import { HydratedDocument } from 'mongoose';
 
 export type CampaignDocument = HydratedDocument<Campaign>;
 
 @Schema()
 export class Campaign {
-  @ApiProperty()
   @Prop({ required: true, unique: true })
   campaign_id: number;
 
-  @ApiProperty()
   @Prop({ required: true })
   campaign_name: string;
 
-  @ApiProperty({ required: false })
-  @Prop({ required: false })
-  min_order_amount: number;
-
-  @ApiProperty({ required: false })
-  @Prop({ required: false })
-  min_product_count: number;
-
-  @ApiProperty({ required: true })
-  @Prop({ type: Types.Buffer, required: true })
+  @Prop()
   discount_rate: number;
 
-  @Prop({ required: false })
+  @Prop()
+  min_order_amount: number;
+
+  @Prop()
+  min_product_count: number;
+
+  @Prop({ default: '' })
   author_name: string;
 
-  @Prop({ required: false })
+  @Prop()
   category_id: number;
 
   @Prop({ type: Object, default: { start: new Date() } })
