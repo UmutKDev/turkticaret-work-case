@@ -177,11 +177,18 @@ export class OrderService {
       .select('-_id, -__v')
       .lean();
 
+    const category = await this.categoryModel
+      .find({ category_id: { $in: products.map((x) => x.category_id) } })
+      .select('-_id, -__v')
+      .lean();
+
     return {
       order_id: order.order_id,
       products: products.map((product) => ({
         id: product.product_id,
         title: product.title,
+        category: category.find((x) => x.category_id === product.category_id)
+          .title,
         list_price: product.list_price,
         stock_quantity: product.stock_quantity,
       })),
