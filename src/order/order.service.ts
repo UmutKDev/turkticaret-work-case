@@ -57,7 +57,7 @@ export class OrderService {
 
     let discountPrice = 0;
 
-    const campaignauthorname = productItems.filter((item) =>
+    const campaignByAuthorCategory = productItems.filter((item) =>
       campaigns.some(
         (campaign) =>
           campaign.author_name === item.author_name &&
@@ -72,46 +72,51 @@ export class OrderService {
         .filter(
           (pS) =>
             pS.product_id === f.id &&
-            pS.author_name === campaignauthorname[0]?.author_name &&
-            pS.category_id === campaignauthorname[0]?.category_id,
+            pS.author_name === campaignByAuthorCategory[0]?.author_name &&
+            pS.category_id === campaignByAuthorCategory[0]?.category_id,
         )
         .map(() => (campaignItemQuantity += f.quantity)),
     );
-    const authorCamp = campaigns.filter(
+
+    const authorCategoryCamp = campaigns.filter(
       (cF) =>
-        cF.author_name === campaignauthorname[0]?.author_name &&
-        cF.category_id === campaignauthorname[0]?.category_id,
+        cF.author_name === campaignByAuthorCategory[0]?.author_name &&
+        cF.category_id === campaignByAuthorCategory[0]?.category_id,
     );
     const percentCamp = campaigns.filter(
       (cF) => cF.author_name.length === 0 && cF.category_id === -1,
     );
 
     let activeCamp = {} as any;
-    const highestDiscountRate = Math.max(
-      ...percentCamp.map((o) => o.discount_rate),
-    );
 
     const highestDiscountCamp = percentCamp.filter(
-      (cF) => cF.discount_rate === highestDiscountRate,
+      (cF) =>
+        cF.discount_rate ===
+        Math.max(...percentCamp.map((o) => o.discount_rate)),
     );
 
-    if (campaignItemQuantity >= authorCamp[0].min_product_count) {
+    if (
+      authorCategoryCamp[0] &&
+      campaignItemQuantity >= authorCategoryCamp[0].min_product_count
+    ) {
       productItems.map((item) => (totalPrice += item.list_price));
-      const topPrice = Math.max(...campaignauthorname.map((o) => o.list_price));
+      const topPrice = Math.max(
+        ...campaignByAuthorCategory.map((o) => o.list_price),
+      );
       if (totalPrice > percentCamp[0].min_order_amount) {
         if (
           totalPrice - topPrice <
           totalPrice - (totalPrice / 100) * highestDiscountCamp[0].discount_rate
         ) {
           activeCamp = {
-            id: authorCamp[0].campaign_id,
-            name: authorCamp[0].campaign_name,
+            id: authorCategoryCamp[0].campaign_id,
+            name: authorCategoryCamp[0].campaign_name,
           };
           discountPrice = totalPrice - topPrice;
         } else {
           activeCamp = {
-            id: authorCamp[0].campaign_id,
-            name: authorCamp[0].campaign_name,
+            id: authorCategoryCamp[0].campaign_id,
+            name: authorCategoryCamp[0].campaign_name,
           };
           discountPrice =
             totalPrice -
@@ -119,8 +124,8 @@ export class OrderService {
         }
       } else {
         activeCamp = {
-          id: authorCamp[0].campaign_id,
-          name: authorCamp[0].campaign_name,
+          id: authorCategoryCamp[0].campaign_id,
+          name: authorCategoryCamp[0].campaign_name,
         };
         discountPrice = totalPrice - topPrice;
       }
