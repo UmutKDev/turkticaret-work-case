@@ -30,7 +30,7 @@ export class OrderService {
     const productItems = await this.productModel
       .find({ product_id: { $in: productIds.map((x) => x.id) } })
       .select(
-        'stock_quantity product_id -_id list_price author_name category_id',
+        '-_id product_id title author_name category_id list_price stock_quantity',
       )
       .lean();
 
@@ -120,7 +120,7 @@ export class OrderService {
           };
           discountPrice =
             totalPrice -
-            totalPrice / (100 * highestDiscountCamp[0].discount_rate);
+            highestDiscountCamp[0].discount_rate * (totalPrice / 100);
         }
       } else {
         activeCamp = {
@@ -138,7 +138,7 @@ export class OrderService {
         };
         discountPrice =
           totalPrice -
-          totalPrice / (100 * highestDiscountCamp[0].discount_rate);
+          highestDiscountCamp[0].discount_rate * (totalPrice / 100);
       } else {
         discountPrice = 0;
       }
@@ -151,8 +151,8 @@ export class OrderService {
       products: productItems.map((productStock) => productStock.product_id),
       campaign_id: activeCamp ? activeCamp.id : null,
       amount: {
-        total: totalPrice,
-        totalWithDiscount: discountPrice,
+        total: parseFloat(totalPrice.toFixed(2)),
+        totalWithDiscount: parseFloat(discountPrice.toFixed(2)),
         shippment: isShippmentDiscountAvailable ? 0 : 35,
       },
     });
