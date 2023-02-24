@@ -103,26 +103,30 @@ export class OrderService {
       const topPrice = Math.max(
         ...campaignByAuthorCategory.map((o) => o.list_price),
       );
-      if (totalPrice > percentCamp[0].min_order_amount) {
+      if (totalPrice > highestDiscountCamp[0].min_order_amount) {
+        console.log('1');
         if (
           totalPrice - topPrice <
           totalPrice - (totalPrice / 100) * highestDiscountCamp[0].discount_rate
         ) {
+          console.log('2');
           activeCamp = {
             id: authorCategoryCamp[0].campaign_id,
             name: authorCategoryCamp[0].campaign_name,
           };
           discountPrice = totalPrice - topPrice;
         } else {
+          console.log('3');
           activeCamp = {
-            id: authorCategoryCamp[0].campaign_id,
-            name: authorCategoryCamp[0].campaign_name,
+            id: highestDiscountCamp[0].campaign_id,
+            name: highestDiscountCamp[0].campaign_name,
           };
           discountPrice =
             totalPrice -
             totalPrice / (100 * highestDiscountCamp[0].discount_rate);
         }
       } else {
+        console.log('4');
         activeCamp = {
           id: authorCategoryCamp[0].campaign_id,
           name: authorCategoryCamp[0].campaign_name,
